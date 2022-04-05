@@ -1,4 +1,5 @@
 const bloodbank = require("../Models/bloodbankregister");
+const bloodbankinfo = require("../Models/bloodstock");
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../utils/generateToken");
 
@@ -36,6 +37,18 @@ const registerbloodbank = asyncHandler(async (req, res) => {
     phonenumber,
   });
   if (newregister) {
+    const user = newregister._id;
+    const dashboard = await bloodbankinfo.create({
+      user,
+    });
+
+    if (dashboard) {
+      res.status(201).json({
+        id: dashboard._id,
+        user: dashboard.user,
+      });
+    }
+
     res.status(201).json({
       _id: newregister._id,
       ownername: newregister.ownername,
@@ -75,4 +88,14 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error("Wrong email or password");
   }
 });
-module.exports = { registerbloodbank, authUser, showbloodbanks };
+
+const bloodstockbyid = asyncHandler(async (req, res) => {
+  const data = await bloodbankinfo.find({ user: req.params.id });
+  res.json(data);
+});
+module.exports = {
+  registerbloodbank,
+  authUser,
+  showbloodbanks,
+  bloodstockbyid,
+};
